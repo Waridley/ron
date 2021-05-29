@@ -15,14 +15,19 @@ const FLOAT_CHAR: u8 = 1 << 1; // [0-9\.Ee+-]
 const IDENT_FIRST_CHAR: u8 = 1 << 2; // [A-Za-z_]
 const IDENT_OTHER_CHAR: u8 = 1 << 3; // [A-Za-z_0-9]
 const WHITESPACE_CHAR: u8 = 1 << 4; // [\n\t\r ]
+const TYPE_PATH_FIRST_CHAR: u8 = 1 << 5; // [A-Za-z_:<]
+const TYPE_PATH_OTHER_CHAR: u8 = 1 << 6; // [A-Za-z_0-0:<>,- ]
 
 // We encode each char as belonging to some number of these categories.
-const DIGIT: u8 = INT_CHAR | FLOAT_CHAR | IDENT_OTHER_CHAR; // [0-9]
-const ABCDF: u8 = INT_CHAR | IDENT_FIRST_CHAR | IDENT_OTHER_CHAR; // [ABCDFabcdf]
-const UNDER: u8 = INT_CHAR | IDENT_FIRST_CHAR | IDENT_OTHER_CHAR; // [_]
-const E____: u8 = INT_CHAR | FLOAT_CHAR | IDENT_FIRST_CHAR | IDENT_OTHER_CHAR; // [Ee]
-const G2Z__: u8 = IDENT_FIRST_CHAR | IDENT_OTHER_CHAR; // [G-Zg-z]
+const DIGIT: u8 = INT_CHAR | FLOAT_CHAR | IDENT_OTHER_CHAR | TYPE_PATH_OTHER_CHAR; // [0-9]
+const ABCDF: u8 = INT_CHAR | IDENT_FIRST_CHAR | IDENT_OTHER_CHAR | TYPE_PATH_FIRST_CHAR | TYPE_PATH_OTHER_CHAR; // [ABCDFabcdf]
+const UNDER: u8 = INT_CHAR | IDENT_FIRST_CHAR | IDENT_OTHER_CHAR | TYPE_PATH_FIRST_CHAR | TYPE_PATH_OTHER_CHAR; // [_]
+const E____: u8 = INT_CHAR | FLOAT_CHAR | IDENT_FIRST_CHAR | IDENT_OTHER_CHAR | TYPE_PATH_FIRST_CHAR | TYPE_PATH_OTHER_CHAR; // [Ee]
+const G2Z__: u8 = IDENT_FIRST_CHAR | IDENT_OTHER_CHAR | TYPE_PATH_FIRST_CHAR | TYPE_PATH_OTHER_CHAR; // [G-Zg-z]
 const PUNCT: u8 = FLOAT_CHAR; // [\.+-]
+const COLON: u8 = TYPE_PATH_FIRST_CHAR | TYPE_PATH_OTHER_CHAR; // [:]
+const LT___: u8 = TYPE_PATH_FIRST_CHAR | TYPE_PATH_OTHER_CHAR; // [<]
+const GT___: u8 = TYPE_PATH_OTHER_CHAR;
 const WS___: u8 = WHITESPACE_CHAR; // [\t\n\r ]
 const _____: u8 = 0; // everything else
 
@@ -36,8 +41,8 @@ const ENCODINGS: [u8; 256] = [
 /*  20+: ·········· */ _____, _____, _____, _____, _____, _____, _____, _____, _____, _____,
 /*  30+: ·· !"#$%&' */ _____, _____, WS___, _____, _____, _____, _____, _____, _____, _____,
 /*  40+: ()*+,-./01 */ _____, _____, _____, PUNCT, _____, PUNCT, PUNCT, _____, DIGIT, DIGIT,
-/*  50+: 23456789:; */ DIGIT, DIGIT, DIGIT, DIGIT, DIGIT, DIGIT, DIGIT, DIGIT, _____, _____,
-/*  60+: <=>?@ABCDE */ _____, _____, _____, _____, _____, ABCDF, ABCDF, ABCDF, ABCDF, E____,
+/*  50+: 23456789:; */ DIGIT, DIGIT, DIGIT, DIGIT, DIGIT, DIGIT, DIGIT, DIGIT, COLON, _____,
+/*  60+: <=>?@ABCDE */ LT___, _____, GT___, _____, _____, ABCDF, ABCDF, ABCDF, ABCDF, E____,
 /*  70+: FGHIJKLMNO */ ABCDF, G2Z__, G2Z__, G2Z__, G2Z__, G2Z__, G2Z__, G2Z__, G2Z__, G2Z__,
 /*  80+: PQRSTUVWZY */ G2Z__, G2Z__, G2Z__, G2Z__, G2Z__, G2Z__, G2Z__, G2Z__, G2Z__, G2Z__,
 /*  90+: Z[\]^_`abc */ G2Z__, _____, _____, _____, _____, UNDER, _____, ABCDF, ABCDF, ABCDF,

@@ -97,7 +97,7 @@ impl<'de> Deserializer<'de> {
     /// accordingly.
     ///
     /// This method assumes there is no identifier left.
-    fn handle_any_struct<V>(&mut self, visitor: V) -> Result<V::Value>
+    fn handle_any_struct<V>(&mut self, name: &'static str, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
@@ -112,7 +112,7 @@ impl<'de> Deserializer<'de> {
                 self.deserialize_tuple(0, visitor)
             } else {
                 // first two arguments are technically incorrect, but ignored anyway
-                self.deserialize_struct("", &[], visitor)
+                self.deserialize_struct(name, &[], visitor)
             }
         } else {
             visitor.visit_unit()
@@ -148,14 +148,14 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
         // `identifier` does not change state if it fails
         let ident = self.bytes.identifier().ok();
 
-        if ident.is_some() {
+        if let Some(ident) = ident {
             self.bytes.skip_ws()?;
-
-            return self.handle_any_struct(visitor);
+            let name = Box::leak(str::from_utf8(ident)?.to_owned().into_boxed_str());
+            return self.handle_any_struct(name, visitor);
         }
 
         match self.bytes.peek_or_eof()? {
-            b'(' => self.handle_any_struct(visitor),
+            b'(' => self.handle_any_struct("", visitor),
             b'[' => self.deserialize_seq(visitor),
             b'{' => self.deserialize_map(visitor),
             b'0'..=b'9' | b'+' | b'-' => {
